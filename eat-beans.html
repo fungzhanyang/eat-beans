@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+    <style type="text/css">
+        canvas {
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+
+<body>
+    <p>当前分数：0</p>
+    <canvas width="800" height="300" id="cas">
+
+    </canvas>
+
+    <script type="text/javascript">
+        var cas2     = document.querySelector('canvas');
+        var ctx2     = cas2.getContext('2d');
+        var r        = 20,
+            maxAngel = 45,
+            a        = 0,
+            flag     = true,
+            dir      = 2,//默认向右
+            x1       = cas2.width / 2 - r,//将主角绘制到cas2中的坐标
+            y1       = cas2.height / 2 - r,
+            step     = 4,
+            s        = step;//嘴巴动作步伐
+        var cas      = document.createElement('canvas');
+        cas.width    = 2 * r;
+        cas.height   = 100;
+        var ctx      = cas.getContext('2d');
+        ctx.translate(r, r);//将坐标移动到画布的r,r  ，否则只能看到1/4圆
+        function toR(a) {
+            return a * Math.PI / 180;
+        }
+        var timer = null;
+        //0,1,2,3  左上右下  37,38,39,40
+        document.body.addEventListener(
+            'keydown', function (e) {
+                var key = e.keyCode;
+                (key == 37 || key == 38 || key == 39 || key == 40) ? s = 2 * step : '';//加速功能
+                //通过keyCode和当前的方向来确定接下来的旋转角度，从而改变方向
+                switch (key) {
+                    case 37:
+                        switch (dir) {
+                            case 1:
+                                ctx.rotate(toR(-90));
+                                break;
+                            case 2:
+                                ctx.rotate(toR(180));
+                                break;
+                            case 3:
+                                ctx.rotate(toR(90));
+                                break;
+                        }
+                        dir = 0;
+                        break;
+                    case 38:
+                        switch (dir) {
+                            case 0:
+                                ctx.rotate(toR(90));
+                                break;
+                            case 2:
+                                ctx.rotate(toR(-90));
+                                break;
+                            case 3:
+                                ctx.rotate(toR(180));
+                                break;
+                        }
+                        dir = 1;
+                        break;
+                    case 39:
+                        switch (dir) {
+                            case 0:
+                                ctx.rotate(toR(180));
+                                break;
+                            case 1:
+                                ctx.rotate(toR(90));
+                                break;
+                            case 3:
+                                ctx.rotate(toR(-90));
+                                break;
+                        }
+                        dir = 2;
+                        break;
+                    case 40:
+                        switch (dir) {
+                            case 0:
+                                ctx.rotate(toR(-90));
+                                break;
+                            case 1:
+                                ctx.rotate(toR(180));
+                                break;
+                            case 2:
+                                ctx.rotate(toR(90));
+                                break;
+                        }
+                        dir = 3;
+                        break;
+                }
+            }
+        );
+        document.body.addEventListener(
+            'keyup', function (e) {
+                var key = e.keyCode;
+                (key == 37 || key == 38 || key == 39 || key == 40) ? s = step : '';
+            });
+        setInterval(function () {
+            //嘴巴动作部分
+            if (flag) {
+                a += s / 2;
+                a >= maxAngel ? flag = false : '';
+            } else {
+                a -= s / 2;
+                a <= s / 2 ? flag = true : '';
+            }
+            ctx.clearRect(-r, -r, cas.width, cas.height);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.arc(0, 0, r, toR(a), toR(-a));
+            ctx.fill();
+            cas2.width = cas2.width;
+            //将主角绘制到canvas中
+            move(dir, s);
+
+        }, 20);
+        //创建一个食物黑点
+        var cas3 = document.createElement("canvas");
+        var ctx3 = cas3.getContext('2d');
+        cas3.width = 10;
+        cas3.height = 10;
+        var x3 = parseInt(Math.random() * cas2.width);
+        var y3 = parseInt(Math.random() * cas2.height);
+        ctx3.moveTo(5, 5);
+        ctx3.arc(5, 5, 5, toR(0), toR(360));
+        ctx3.fill();
+        var score = 0;
+        function move(dir, step) {
+            //食物添加到cas2画布中
+            ctx2.drawImage(cas3, x3, y3);
+            switch (dir) {
+                //判断方向
+                case 0:
+                    ctx2.drawImage(cas, x1 -= step, y1);
+                    x1 < (-2 * r) ? x1 = cas2.width : "";
+                    break;
+                case 1:
+                    ctx2.drawImage(cas, x1, y1 -= step);
+                    y1 < (-2 * r) ? y1 = cas2.height : "";
+                    break;
+                case 2:
+                    ctx2.drawImage(cas, x1 += step, y1);
+                    x1 > cas2.width ? x1 = -r : "";
+                    break;
+                case 3:
+                    ctx2.drawImage(cas, x1, y1 += step);
+                    y1 > cas2.height ? y1 = -r : "";
+                    break;
+            }
+            //碰撞检测，如果碰到了，更新食物的坐标，并改变分数
+            if ((x3 + 5) > x1 && x3 < (x1 + 2 * r) && (y3 + 5) > y1 && y3 < (y1 + 2 * r)) {
+                x3 = parseInt(Math.random() * cas2.width);
+                y3 = parseInt(Math.random() * cas2.height);
+                document.querySelector("p").innerHTML = "当前分数：" + (++score);
+            }
+        }
+    </script>
+</body>
+
+</html>
